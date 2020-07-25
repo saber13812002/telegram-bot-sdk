@@ -3,6 +3,7 @@
 namespace Telegram\Bot\Keyboard;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Class Base.
@@ -19,10 +20,10 @@ class Base extends Collection
      */
     public function __call($method, $args)
     {
-        if (! starts_with($method, 'set')) {
+        if (! Str::startsWith($method, 'set')) {
             return parent::__call($method, $args);
         }
-        $property = snake_case(substr($method, 3));
+        $property = Str::snake(substr($method, 3));
         $this->items[$property] = $args[0];
 
         return $this;

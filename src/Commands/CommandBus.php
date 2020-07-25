@@ -2,12 +2,14 @@
 
 namespace Telegram\Bot\Commands;
 
-use Telegram\Bot\Api;
-use Telegram\Bot\Objects\Update;
 use Illuminate\Support\Collection;
-use Telegram\Bot\Traits\Singleton;
+use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Telegram\Bot\Answers\AnswerBus;
+use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\Objects\Update;
+use Telegram\Bot\Traits\Singleton;
 
 /**
  * Class CommandBus.
@@ -30,8 +32,6 @@ class CommandBus extends AnswerBus
      * Instantiate Command Bus.
      *
      * @param Api|null $telegram
-     *
-     * @throws TelegramSDKException
      */
     public function __construct(Api $telegram = null)
     {
@@ -53,9 +53,10 @@ class CommandBus extends AnswerBus
      *
      * @param array $commands
      *
+     * @throws TelegramSDKException
      * @return CommandBus
      */
-    public function addCommands(array $commands): CommandBus
+    public function addCommands(array $commands): self
     {
         foreach ($commands as $command) {
             $this->addCommand($command);
@@ -73,7 +74,7 @@ class CommandBus extends AnswerBus
      *
      * @return CommandBus
      */
-    public function addCommand($command): CommandBus
+    public function addCommand($command): self
     {
         $command = $this->resolveCommand($command);
 
@@ -106,7 +107,7 @@ class CommandBus extends AnswerBus
      *
      * @return CommandBus
      */
-    public function removeCommand($name): CommandBus
+    public function removeCommand($name): self
     {
         unset($this->commands[$name]);
 
@@ -120,7 +121,7 @@ class CommandBus extends AnswerBus
      *
      * @return CommandBus
      */
-    public function removeCommands(array $names): CommandBus
+    public function removeCommands(array $names): self
     {
         foreach ($names as $name) {
             $this->removeCommand($name);
@@ -141,7 +142,7 @@ class CommandBus extends AnswerBus
     public function parseCommand($text, $offset, $length): string
     {
         if (trim($text) === '') {
-            throw new \InvalidArgumentException('Message is empty, Cannot parse for command');
+            throw new InvalidArgumentException('Message is empty, Cannot parse for command');
         }
 
         $command = substr(
@@ -151,7 +152,7 @@ class CommandBus extends AnswerBus
         );
 
         // When in group - Ex: /command@MyBot
-        if (str_contains($command, '@') && ends_with($command, ['bot', 'Bot'])) {
+        if (Str::contains($command, '@') && Str::endsWith($command, ['bot', 'Bot'])) {
             $command = explode('@', $command);
             $command = $command[0];
         }
@@ -163,8 +164,6 @@ class CommandBus extends AnswerBus
      * Handles Inbound Messages and Executes Appropriate Command.
      *
      * @param $update
-     *
-     * @throws TelegramSDKException
      *
      * @return Update
      */
@@ -227,8 +226,8 @@ class CommandBus extends AnswerBus
     {
         $command = $this->commands[$name] ??
             $this->commandAliases[$name] ??
-            $this->commands['help'] ?? 
-            collect($this->commands)->filter(function($command) use ($name) {
+            $this->commands['help'] ??
+            collect($this->commands)->filter(function ($command) use ($name) {
                 return $command instanceof $name;
             })->first() ?? null;
 
@@ -238,9 +237,8 @@ class CommandBus extends AnswerBus
     /**
      * @param $command
      *
-     * @throws \Telegram\Bot\Exceptions\TelegramSDKException
-     *
      * @return object
+     * @throws TelegramSDKException
      */
     private function resolveCommand($command)
     {
@@ -262,7 +260,7 @@ class CommandBus extends AnswerBus
      * @param $command
      * @param $alias
      *
-     * @throws \Telegram\Bot\Exceptions\TelegramSDKException
+     * @throws TelegramSDKException
      */
     private function checkForConflicts($command, $alias)
     {
@@ -289,9 +287,8 @@ class CommandBus extends AnswerBus
     /**
      * @param $command
      *
-     * @throws \Telegram\Bot\Exceptions\TelegramSDKException
-     *
      * @return object
+     * @throws TelegramSDKException
      */
     private function makeCommandObj($command)
     {

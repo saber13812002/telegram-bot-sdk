@@ -14,6 +14,9 @@ class TelegramRequest
     /** @var string|null The bot access token to use for this request. */
     protected $accessToken;
 
+    /** @var string|null The bot base url to use for this request. */
+    protected $url;
+
     /** @var string The HTTP method for this request. */
     protected $method;
 
@@ -49,12 +52,14 @@ class TelegramRequest
      */
     public function __construct(
         $accessToken = null,
+        $url = null,
         $method = null,
         $endpoint = null,
         array $params = [],
         $isAsyncRequest = false
     ) {
         $this->setAccessToken($accessToken);
+        $this->setUrl($url);
         $this->setMethod($method);
         $this->setEndpoint($endpoint);
         $this->setParams($params);
@@ -68,7 +73,7 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setAsyncRequest($isAsyncRequest): TelegramRequest
+    public function setAsyncRequest($isAsyncRequest): self
     {
         $this->isAsyncRequest = $isAsyncRequest;
 
@@ -96,6 +101,16 @@ class TelegramRequest
     {
         return $this->accessToken;
     }
+    
+    /**
+     * Return the bot base url for this request.
+     *
+     * @return string|null
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
 
     /**
      * Set the bot access token for this request.
@@ -104,9 +119,23 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setAccessToken(string $accessToken): TelegramRequest
+    public function setAccessToken(string $accessToken): self
     {
         $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    /**
+     * Set the bot base url for this request.
+     *
+     * @param string $accessToken
+     *
+     * @return TelegramRequest
+     */
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
 
         return $this;
     }
@@ -144,7 +173,7 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setEndpoint(string $endpoint): TelegramRequest
+    public function setEndpoint(string $endpoint): self
     {
         $this->endpoint = $endpoint;
 
@@ -170,7 +199,7 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setHeaders(array $headers): TelegramRequest
+    public function setHeaders(array $headers): self
     {
         $this->headers = array_merge($this->headers, $headers);
 
@@ -230,7 +259,7 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setMethod(string $method): TelegramRequest
+    public function setMethod(string $method): self
     {
         $this->method = strtoupper($method);
 
@@ -254,7 +283,7 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setParams(array $params = []): TelegramRequest
+    public function setParams(array $params = []): self
     {
         $this->params = array_merge($this->params, $params);
 
@@ -278,7 +307,7 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setTimeOut(int $timeOut): TelegramRequest
+    public function setTimeOut(int $timeOut): self
     {
         $this->timeOut = $timeOut;
 
@@ -302,7 +331,7 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setConnectTimeOut(int $connectTimeOut): TelegramRequest
+    public function setConnectTimeOut(int $connectTimeOut): self
     {
         $this->connectTimeOut = $connectTimeOut;
 

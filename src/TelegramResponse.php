@@ -2,10 +2,11 @@
 
 namespace Telegram\Bot;
 
-use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Promise\PromiseInterface;
-use Telegram\Bot\Exceptions\TelegramSDKException;
+use InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
 use Telegram\Bot\Exceptions\TelegramResponseException;
+use Telegram\Bot\Exceptions\TelegramSDKException;
 
 /**
  * Class TelegramResponse.
@@ -52,7 +53,7 @@ class TelegramResponse
         } elseif ($response instanceof PromiseInterface) {
             $this->httpStatusCode = null;
         } else {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Second constructor argument "response" must be instance of ResponseInterface or PromiseInterface'
             );
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Telegram\Bot\Objects\Inputmedia;
+namespace Telegram\Bot\Objects\InputMedia;
 
 use Telegram\Bot\FileUpload\InputFile;
 
@@ -28,5 +28,4 @@ class InputMediaVideo extends InputMedia
             'thumb' => InputFile::class,
         ];
     }
-
 }

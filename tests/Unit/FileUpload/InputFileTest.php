@@ -2,8 +2,8 @@
 
 namespace Telegram\Bot\Tests\Unit\FileUpload;
 
-use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\LazyOpenStream;
+use PHPUnit\Framework\TestCase;
 use Telegram\Bot\FileUpload\InputFile;
 
 class InputFileTest extends TestCase
@@ -14,7 +14,7 @@ class InputFileTest extends TestCase
     protected $tempFileName;
     protected $url;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->tempPath = sys_get_temp_dir();
@@ -23,7 +23,7 @@ class InputFileTest extends TestCase
         $this->tempStream = new LazyOpenStream($this->tempFileName, 'r');
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         if (file_exists($this->tempFileName)) {
             unlink($this->tempFileName);
@@ -56,5 +56,20 @@ class InputFileTest extends TestCase
         $this->assertEquals('newFileNameString.jpg', $inputFileString->getFilename());
         $this->assertEquals('newFileNameResource.jpg', $inputFileResource->getFilename());
         $this->assertEquals('newFileNameStream.jpg', $inputFileStream->getFilename());
+    }
+
+    /** @test */
+    public function it_ensures_the_open_method_return_resource()
+    {
+        $object = new InputFile('https://telegram.org/img/t_logo.png');
+
+        try {
+            $this->assertEquals(is_resource($object->getContents()), true);
+        } catch (\RuntimeException $e) {
+            /*
+             * skip this test, if run without internet connection
+             */
+            $this->assertInstanceOf(InputFile::class, $object);
+        }
     }
 }

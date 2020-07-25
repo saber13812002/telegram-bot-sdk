@@ -3,13 +3,14 @@
 namespace Telegram\Bot\HttpClients;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Promise;
-use GuzzleHttp\RequestOptions;
 use GuzzleHttp\ClientInterface;
-use Psr\Http\Message\ResponseInterface;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
 use Telegram\Bot\Exceptions\TelegramSDKException;
+use Throwable;
 
 /**
  * Class GuzzleHttpClient.
@@ -40,6 +41,7 @@ class GuzzleHttpClient implements HttpClientInterface
 
     /**
      * Unwrap Promises.
+     * @throws Throwable
      */
     public function __destruct()
     {
@@ -53,7 +55,7 @@ class GuzzleHttpClient implements HttpClientInterface
      *
      * @return GuzzleHttpClient
      */
-    public function setClient(ClientInterface $client): GuzzleHttpClient
+    public function setClient(ClientInterface $client): self
     {
         $this->client = $client;
 
@@ -62,6 +64,7 @@ class GuzzleHttpClient implements HttpClientInterface
 
     /**
      * {@inheritdoc}
+     * @throws TelegramSDKException
      */
     public function send(
         $url,
@@ -106,7 +109,8 @@ class GuzzleHttpClient implements HttpClientInterface
         array $headers,
         $body,
         $options,
-        $isAsyncRequest = false
+        $isAsyncRequest = false,
+        $proxy = null
     ): array {
         $default_options = [
             RequestOptions::HEADERS         => $headers,
@@ -115,6 +119,10 @@ class GuzzleHttpClient implements HttpClientInterface
             RequestOptions::CONNECT_TIMEOUT => $this->getConnectTimeOut(),
             RequestOptions::SYNCHRONOUS     => ! $isAsyncRequest,
         ];
+
+        if ($proxy !== null) {
+            $default_options[RequestOptions::PROXY] = $proxy;
+        }
 
         return array_merge($default_options, $options);
     }
@@ -130,7 +138,7 @@ class GuzzleHttpClient implements HttpClientInterface
     /**
      * {@inheritdoc}
      */
-    public function setTimeOut($timeOut): GuzzleHttpClient
+    public function setTimeOut($timeOut): self
     {
         $this->timeOut = $timeOut;
 
@@ -148,7 +156,7 @@ class GuzzleHttpClient implements HttpClientInterface
     /**
      * {@inheritdoc}
      */
-    public function setConnectTimeOut($connectTimeOut): GuzzleHttpClient
+    public function setConnectTimeOut($connectTimeOut): self
     {
         $this->connectTimeOut = $connectTimeOut;
 

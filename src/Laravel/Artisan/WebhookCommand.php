@@ -2,11 +2,13 @@
 
 namespace Telegram\Bot\Laravel\Artisan;
 
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use Symfony\Component\Console\Helper\TableCell;
 use Telegram\Bot\Api;
 use Telegram\Bot\BotsManager;
-use Illuminate\Console\Command;
+use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Objects\WebhookInfo;
-use Symfony\Component\Console\Helper\TableCell;
 
 class WebhookCommand extends Command
 {
@@ -50,6 +52,8 @@ class WebhookCommand extends Command
 
     /**
      * Execute the console command.
+     *
+     * @throws TelegramSDKException
      */
     public function handle()
     {
@@ -72,11 +76,12 @@ class WebhookCommand extends Command
 
     /**
      * Setup Webhook.
+     * @throws TelegramSDKException
      */
     protected function setupWebhook()
     {
-        $params = ['url' => array_get($this->config, 'webhook_url')];
-        $certificatePath = array_get($this->config, 'certificate_path', false);
+        $params = ['url' => data_get($this->config, 'webhook_url')];
+        $certificatePath = data_get($this->config, 'certificate_path', false);
 
         if ($certificatePath) {
             $params['certificate'] = $certificatePath;
@@ -94,6 +99,7 @@ class WebhookCommand extends Command
 
     /**
      * Remove Webhook.
+     * @throws TelegramSDKException
      */
     protected function removeWebHook()
     {
@@ -112,6 +118,7 @@ class WebhookCommand extends Command
 
     /**
      * Get Webhook Info.
+     * @throws TelegramSDKException
      */
     protected function getInfo()
     {
@@ -142,7 +149,7 @@ class WebhookCommand extends Command
     protected function makeWebhookInfoResponse(WebhookInfo $response, string $bot)
     {
         $rows = $response->map(function ($value, $key) {
-            $key = title_case(str_replace('_', ' ', $key));
+            $key = Str::title(str_replace('_', ' ', $key));
             $value = is_bool($value) ? $this->mapBool($value) : $value;
 
             return compact('key', 'value');

@@ -2,10 +2,10 @@
 
 namespace Telegram\Bot;
 
-use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Promise\PromiseInterface;
-use Telegram\Bot\HttpClients\GuzzleHttpClient;
+use Psr\Http\Message\ResponseInterface;
 use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\HttpClients\GuzzleHttpClient;
 use Telegram\Bot\HttpClients\HttpClientInterface;
 
 /**
@@ -46,7 +46,7 @@ class TelegramClient
      *
      * @return TelegramClient
      */
-    public function setHttpClientHandler(HttpClientInterface $httpClientHandler): TelegramClient
+    public function setHttpClientHandler(HttpClientInterface $httpClientHandler): self
     {
         $this->httpClientHandler = $httpClientHandler;
 
@@ -64,7 +64,7 @@ class TelegramClient
      */
     public function sendRequest(TelegramRequest $request): TelegramResponse
     {
-        list($url, $method, $headers, $isAsyncRequest) = $this->prepareRequest($request);
+        [$url, $method, $headers, $isAsyncRequest] = $this->prepareRequest($request);
 
         $options = $this->getOption($request, $method);
 
@@ -97,7 +97,7 @@ class TelegramClient
      */
     public function prepareRequest(TelegramRequest $request): array
     {
-        $url = $this->getBaseBotUrl().$request->getAccessToken().'/'.$request->getEndpoint();
+        $url =  $this->getBaseBotUrl($request) . $request->getAccessToken() . '/' . $request->getEndpoint();
 
         return [
             $url,
@@ -112,9 +112,9 @@ class TelegramClient
      *
      * @return string
      */
-    public function getBaseBotUrl(): string
+    public function getBaseBotUrl($request): string
     {
-        return static::BASE_BOT_URL;
+        return $request->getUrl() ? $request->getUrl() : static::BASE_BOT_URL;
     }
 
     /**
@@ -131,7 +131,7 @@ class TelegramClient
     }
 
     /**
-     * @param \Telegram\Bot\TelegramRequest $request
+     * @param TelegramRequest $request
      * @param $method
      *
      * @return array

@@ -2,13 +2,13 @@
 
 namespace Telegram\Bot\Traits;
 
+use Telegram\Bot\Exceptions\CouldNotUploadInputFile;
+use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\FileUpload\InputFile;
+use Telegram\Bot\HttpClients\HttpClientInterface;
 use Telegram\Bot\TelegramClient;
 use Telegram\Bot\TelegramRequest;
 use Telegram\Bot\TelegramResponse;
-use Telegram\Bot\FileUpload\InputFile;
-use Telegram\Bot\Exceptions\TelegramSDKException;
-use Telegram\Bot\HttpClients\HttpClientInterface;
-use Telegram\Bot\Exceptions\CouldNotUploadInputFile;
 
 /**
  * Http.
@@ -19,6 +19,9 @@ trait Http
 
     /** @var string Telegram Bot API Access Token. */
     protected $accessToken = null;
+    
+    /** @var string Telegram Bot API Base Url. */
+    protected $url = null;
 
     /** @var TelegramClient The Telegram client service. */
     protected $client = null;
@@ -87,6 +90,17 @@ trait Http
     }
 
     /**
+     * Returns Telegram Bot base Url.
+     *
+     * @return string
+     */
+
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
      * Sets the bot access token to use with API requests.
      *
      * @param string $accessToken The bot access token to save.
@@ -96,6 +110,21 @@ trait Http
     public function setAccessToken(string $accessToken)
     {
         $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    /**
+     * Sets the bot url to use with API requests.
+     *
+     * @param string $url The bot base url to save.
+     *
+     * @return $this
+     */
+
+    public function setUrl(string $url)
+    {
+        $this->url = $url;
 
         return $this;
     }
@@ -318,6 +347,7 @@ trait Http
     {
         return (new TelegramRequest(
             $this->getAccessToken(),
+            $this->getUrl(),
             $method,
             $endpoint,
             $params,
@@ -331,18 +361,16 @@ trait Http
      * @param array $params
      * @param $inputFileField
      *
-     * @throws \Telegram\Bot\Exceptions\CouldNotUploadInputFile
-     *
-     * @return array
+     * @throws CouldNotUploadInputFile
      */
-    protected function validateInputFileField(array $params, $inputFileField)
+    protected function validateInputFileField(array $params, $inputFileField): void
     {
         if (! isset($params[$inputFileField])) {
             throw CouldNotUploadInputFile::missingParam($inputFileField);
         }
 
-        //All file-paths, urls, or file resources should be provided by using the InputFile object
-        if (! $params[$inputFileField] instanceof InputFile) {
+        // All file-paths, urls, or file resources should be provided by using the InputFile object
+        if ((! $params[$inputFileField] instanceof InputFile) || (is_string($params[$inputFileField]) && ! $this->is_json($params[$inputFileField]))) {
             throw CouldNotUploadInputFile::inputFileParameterShouldBeInputFileEntity($inputFileField);
         }
     }

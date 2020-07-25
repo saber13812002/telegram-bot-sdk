@@ -2,12 +2,14 @@
 
 namespace Telegram\Bot\Methods;
 
-use Telegram\Bot\Objects\Message;
-use Telegram\Bot\Objects\GameHighScore;
 use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\Objects\GameHighScore;
+use Telegram\Bot\Objects\Message;
+use Telegram\Bot\Traits\Http;
 
 /**
  * Class Game.
+ * @mixin Http
  */
 trait Game
 {

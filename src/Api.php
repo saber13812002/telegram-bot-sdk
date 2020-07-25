@@ -2,6 +2,7 @@
 
 namespace Telegram\Bot;
 
+use BadMethodCallException;
 use Illuminate\Support\Traits\Macroable;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\HttpClients\HttpClientInterface;
@@ -22,6 +23,7 @@ class Api
         Traits\CommandsHandler,
         Traits\HasContainer;
     use Methods\Chat,
+        Methods\Commands,
         Methods\EditMessage,
         Methods\Game,
         Methods\Get,
@@ -38,6 +40,7 @@ class Api
 
     /** @var string The name of the environment variable that contains the Telegram Bot API Access Token. */
     const BOT_TOKEN_ENV_NAME = 'TELEGRAM_BOT_TOKEN';
+    const TELEGRAM_WEBHOOK_URL = 'TELEGRAM_WEBHOOK_URL';
 
     /**
      * Instantiates a new Telegram super-class object.
@@ -49,9 +52,10 @@ class Api
      *
      * @throws TelegramSDKException
      */
-    public function __construct($token = null, $async = false, $httpClientHandler = null)
+    public function __construct($token = null, $url = null, $async = false, $httpClientHandler = null)
     {
         $this->accessToken = $token ?? getenv(static::BOT_TOKEN_ENV_NAME);
+        $this->url = $url ?? getenv(static::TELEGRAM_WEBHOOK_URL);
         $this->validateAccessToken();
 
         if ($async) {
@@ -96,9 +100,12 @@ class Api
             return call_user_func_array([$this->getCommandBus(), $matches[0]], $arguments);
         }
 
-        throw new \BadMethodCallException("Method [$method] does not exist.");
+        throw new BadMethodCallException("Method [$method] does not exist.");
     }
 
+    /**
+     * @throws TelegramSDKException
+     */
     private function validateAccessToken()
     {
         if (! $this->accessToken || ! is_string($this->accessToken)) {

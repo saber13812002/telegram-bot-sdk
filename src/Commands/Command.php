@@ -2,10 +2,10 @@
 
 namespace Telegram\Bot\Commands;
 
-use Telegram\Bot\Api;
-use Telegram\Bot\Objects\Update;
 use Illuminate\Support\Collection;
 use Telegram\Bot\Answers\Answerable;
+use Telegram\Bot\Api;
+use Telegram\Bot\Objects\Update;
 
 /**
  * Class Command.
@@ -57,7 +57,7 @@ abstract class Command implements CommandInterface
      *
      * @return Command
      */
-    public function setName(string $name): Command
+    public function setName(string $name): self
     {
         $this->name = $name;
 
@@ -83,7 +83,7 @@ abstract class Command implements CommandInterface
      *
      * @return Command
      */
-    public function setAliases($aliases): Command
+    public function setAliases($aliases): self
     {
         $this->aliases = is_array($aliases) ? $aliases : [$aliases];
 
@@ -109,7 +109,7 @@ abstract class Command implements CommandInterface
      *
      * @return Command
      */
-    public function setDescription(string $description): Command
+    public function setDescription(string $description): self
     {
         $this->description = $description;
 
@@ -135,7 +135,7 @@ abstract class Command implements CommandInterface
      *
      * @return Command
      */
-    public function setArguments(array $arguments): Command
+    public function setArguments(array $arguments): self
     {
         $this->arguments = $arguments;
 
@@ -159,7 +159,7 @@ abstract class Command implements CommandInterface
      *
      * @return Command
      */
-    public function setPattern(string $pattern): Command
+    public function setPattern(string $pattern): self
     {
         $this->pattern = $pattern;
 
@@ -306,6 +306,10 @@ abstract class Command implements CommandInterface
         //Get all the bot_command offsets in the Update object
         $commandOffsets = $this->allCommandOffsets();
 
+        if ($commandOffsets->count() === 0) {
+            return $this->getUpdate()->getMessage()->text;
+        }
+
         //Extract the current offset for this command and, if it exists, the offset of the NEXT bot_command entity
         $splice = $commandOffsets->splice(
             $commandOffsets->search($this->entity['offset']),
@@ -337,7 +341,9 @@ abstract class Command implements CommandInterface
      */
     private function allCommandOffsets()
     {
-        return $this->getUpdate()->getMessage()->getEntities()
+        return $this->getUpdate()
+            ->getMessage()
+            ->get('entities', collect())
             ->filter(function ($entity) {
                 return $entity['type'] === 'bot_command';
             })
