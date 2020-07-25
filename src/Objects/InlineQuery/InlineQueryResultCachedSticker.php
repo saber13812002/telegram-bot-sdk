@@ -3,7 +3,7 @@
 namespace Telegram\Bot\Objects\InlineQuery;
 
 /**
- * Class InlineQueryResultCachedsticker
+ * Class InlineQueryResultCachedsticker.
  *
  * <code>
  * $params = [
@@ -23,9 +23,5 @@ namespace Telegram\Bot\Objects\InlineQuery;
  */
 class InlineQueryResultCachedSticker extends InlineBaseObject
 {
-    public function __construct($params = [])
-    {
-        parent::__construct($params);
-        $this->put('type', 'sticker');
-    }
+    protected $type = 'sticker';
 }

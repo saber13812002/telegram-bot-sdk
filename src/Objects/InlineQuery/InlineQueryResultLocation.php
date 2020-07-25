@@ -3,7 +3,7 @@
 namespace Telegram\Bot\Objects\InlineQuery;
 
 /**
- * Class InlineQueryResultLocation
+ * Class InlineQueryResultLocation.
  *
  * <code>
  * $params = [
@@ -32,9 +32,5 @@ namespace Telegram\Bot\Objects\InlineQuery;
  * @method $this setThumbHeight($int)               Optional. Thumbnail height */
 class InlineQueryResultLocation extends InlineBaseObject
 {
-    public function __construct($params = [])
-    {
-        parent::__construct($params);
-        $this->put('type', 'location');
-    }
+    protected $type = 'location';
 }

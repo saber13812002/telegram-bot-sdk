@@ -11,56 +11,35 @@ use Telegram\Bot\Exceptions\TelegramSDKException;
  */
 class TelegramRequest
 {
-    /**
-     * @var string|null The bot access token to use for this request.
-     */
+    /** @var string|null The bot access token to use for this request. */
     protected $accessToken;
 
-    /**
-     * @var string The HTTP method for this request.
-     */
+    /** @var string|null The bot base url to use for this request. */
+    protected $url;
+
+    /** @var string The HTTP method for this request. */
     protected $method;
 
-    /**
-     * @var string The API endpoint for this request.
-     */
+    /** @var string The API endpoint for this request. */
     protected $endpoint;
 
-    /**
-     * @var array The headers to send with this request.
-     */
+    /** @var array The headers to send with this request. */
     protected $headers = [];
 
-    /**
-     * @var array The parameters to send with this request.
-     */
+    /** @var array The parameters to send with this request. */
     protected $params = [];
 
-    /**
-     * @var array The files to send with this request.
-     */
+    /** @var array The files to send with this request. */
     protected $files = [];
 
-    /**
-     * Indicates if the request to Telegram will be asynchronous (non-blocking).
-     *
-     * @var bool
-     */
+    /** @var bool Indicates if the request to Telegram will be asynchronous (non-blocking). */
     protected $isAsyncRequest = false;
 
-    /**
-     * Timeout of the request in seconds.
-     *
-     * @var int
-     */
-    protected $timeOut = 30;
+    /** @var int Timeout of the request in seconds. */
+    protected $timeOut;
 
-    /**
-     * Connection timeout of the request in seconds.
-     *
-     * @var int
-     */
-    protected $connectTimeOut = 10;
+    /** @var int Connection timeout of the request in seconds. */
+    protected $connectTimeOut;
 
     /**
      * Creates a new Request entity.
@@ -70,39 +49,47 @@ class TelegramRequest
      * @param string|null $endpoint
      * @param array|null  $params
      * @param bool        $isAsyncRequest
-     * @param int         $timeOut
-     * @param int         $connectTimeOut
      */
     public function __construct(
         $accessToken = null,
+        $url = null,
         $method = null,
         $endpoint = null,
         array $params = [],
-        $isAsyncRequest = false,
-        $timeOut = 60,
-        $connectTimeOut = 10
+        $isAsyncRequest = false
     ) {
         $this->setAccessToken($accessToken);
+        $this->setUrl($url);
         $this->setMethod($method);
         $this->setEndpoint($endpoint);
         $this->setParams($params);
         $this->setAsyncRequest($isAsyncRequest);
-        $this->setTimeOut($timeOut);
-        $this->setConnectTimeOut($connectTimeOut);
     }
 
     /**
-     * Set the bot access token for this request.
+     * Make this request asynchronous (non-blocking).
      *
-     * @param string
+     * @param $isAsyncRequest
      *
      * @return TelegramRequest
      */
-    public function setAccessToken($accessToken)
+    public function setAsyncRequest($isAsyncRequest): self
     {
-        $this->accessToken = $accessToken;
+        $this->isAsyncRequest = $isAsyncRequest;
 
         return $this;
+    }
+
+    /**
+     * Validate that bot access token exists for this request.
+     *
+     * @throws TelegramSDKException
+     */
+    public function validateAccessToken()
+    {
+        if (null === $this->getAccessToken()) {
+            throw new TelegramSDKException('You must provide your bot access token to make any API requests.');
+        }
     }
 
     /**
@@ -114,42 +101,43 @@ class TelegramRequest
     {
         return $this->accessToken;
     }
-
+    
     /**
-     * Validate that bot access token exists for this request.
+     * Return the bot base url for this request.
      *
-     * @throws TelegramSDKException
+     * @return string|null
      */
-    public function validateAccessToken()
+    public function getUrl()
     {
-        $accessToken = $this->getAccessToken();
-        if ($accessToken === null) {
-            throw new TelegramSDKException('You must provide your bot access token to make any API requests.');
-        }
+        return $this->url;
     }
 
     /**
-     * Set the HTTP method for this request.
+     * Set the bot access token for this request.
      *
-     * @param string
+     * @param string $accessToken
      *
      * @return TelegramRequest
      */
-    public function setMethod($method)
+    public function setAccessToken(string $accessToken): self
     {
-        $this->method = strtoupper($method);
+        $this->accessToken = $accessToken;
 
         return $this;
     }
 
     /**
-     * Return the HTTP method for this request.
+     * Set the bot base url for this request.
      *
-     * @return string
+     * @param string $accessToken
+     *
+     * @return TelegramRequest
      */
-    public function getMethod()
+    public function setUrl(string $url): self
     {
-        return $this->method;
+        $this->url = $url;
+
+        return $this;
     }
 
     /**
@@ -159,13 +147,23 @@ class TelegramRequest
      */
     public function validateMethod()
     {
-        if (!$this->method) {
+        if (! $this->method) {
             throw new TelegramSDKException('HTTP method not specified.');
         }
 
-        if (!in_array($this->method, ['GET', 'POST'])) {
-            throw new TelegramSDKException('Invalid HTTP method specified.');
+        if (! in_array($this->method, ['GET', 'POST'])) {
+            throw new TelegramSDKException('Invalid HTTP method specified. Must be GET or POST');
         }
+    }
+
+    /**
+     * Return the API Endpoint for this request.
+     *
+     * @return string
+     */
+    public function getEndpoint(): string
+    {
+        return $this->endpoint;
     }
 
     /**
@@ -175,57 +173,9 @@ class TelegramRequest
      *
      * @return TelegramRequest
      */
-    public function setEndpoint($endpoint)
+    public function setEndpoint(string $endpoint): self
     {
         $this->endpoint = $endpoint;
-
-        return $this;
-    }
-
-    /**
-     * Return the API Endpoint for this request.
-     *
-     * @return string
-     */
-    public function getEndpoint()
-    {
-        return $this->endpoint;
-    }
-
-    /**
-     * Set the params for this request.
-     *
-     * @param array $params
-     *
-     * @return TelegramRequest
-     */
-    public function setParams(array $params = [])
-    {
-        $this->params = array_merge($this->params, $params);
-
-        return $this;
-    }
-
-    /**
-     * Return the params for this request.
-     *
-     * @return array
-     */
-    public function getParams()
-    {
-        return $this->params;
-    }
-
-    /**
-     * Set the headers for this request.
-     *
-     * @param array $headers
-     *
-     * @return TelegramRequest
-     */
-    public function setHeaders(array $headers)
-    {
-        $this->headers = array_merge($this->headers, $headers);
 
         return $this;
     }
@@ -235,7 +185,7 @@ class TelegramRequest
      *
      * @return array
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         $headers = $this->getDefaultHeaders();
 
@@ -243,17 +193,29 @@ class TelegramRequest
     }
 
     /**
-     * Make this request asynchronous (non-blocking).
+     * Set the headers for this request.
      *
-     * @param $isAsyncRequest
+     * @param array $headers
      *
      * @return TelegramRequest
      */
-    public function setAsyncRequest($isAsyncRequest)
+    public function setHeaders(array $headers): self
     {
-        $this->isAsyncRequest = $isAsyncRequest;
+        $this->headers = array_merge($this->headers, $headers);
 
         return $this;
+    }
+
+    /**
+     * The default headers used with every request.
+     *
+     * @return array
+     */
+    public function getDefaultHeaders(): array
+    {
+        return [
+            'User-Agent' => 'Telegram Bot PHP SDK v'.Api::VERSION.' - (https://github.com/irazasyed/telegram-bot-sdk)',
+        ];
     }
 
     /**
@@ -261,7 +223,7 @@ class TelegramRequest
      *
      * @return bool
      */
-    public function isAsyncRequest()
+    public function isAsyncRequest(): bool
     {
         return $this->isAsyncRequest;
     }
@@ -271,7 +233,7 @@ class TelegramRequest
      *
      * @return array
      */
-    public function getPostParams()
+    public function getPostParams(): array
     {
         if ($this->getMethod() === 'POST') {
             return $this->getParams();
@@ -281,31 +243,71 @@ class TelegramRequest
     }
 
     /**
-     * The default headers used with every request.
+     * Return the HTTP method for this request.
      *
-     * @return array
+     * @return string
      */
-    public function getDefaultHeaders()
+    public function getMethod(): string
     {
-        return [
-            'User-Agent' => 'Telegram Bot PHP SDK v'.Api::VERSION.' - (https://github.com/irazasyed/telegram-bot-sdk)',
-        ];
+        return $this->method;
     }
 
     /**
+     * Set the HTTP method for this request.
+     *
+     * @param string
+     *
+     * @return TelegramRequest
+     */
+    public function setMethod(string $method): self
+    {
+        $this->method = strtoupper($method);
+
+        return $this;
+    }
+
+    /**
+     * Return the params for this request.
+     *
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->params;
+    }
+
+    /**
+     * Set the params for this request.
+     *
+     * @param array $params
+     *
+     * @return TelegramRequest
+     */
+    public function setParams(array $params = []): self
+    {
+        $this->params = array_merge($this->params, $params);
+
+        return $this;
+    }
+
+    /**
+     * Get Timeout.
+     *
      * @return int
      */
-    public function getTimeOut()
+    public function getTimeOut(): int
     {
         return $this->timeOut;
     }
 
     /**
+     * Set Timeout.
+     *
      * @param int $timeOut
      *
-     * @return $this
+     * @return TelegramRequest
      */
-    public function setTimeOut($timeOut)
+    public function setTimeOut(int $timeOut): self
     {
         $this->timeOut = $timeOut;
 
@@ -313,19 +315,23 @@ class TelegramRequest
     }
 
     /**
+     * Get Connection Timeout.
+     *
      * @return int
      */
-    public function getConnectTimeOut()
+    public function getConnectTimeOut(): int
     {
         return $this->connectTimeOut;
     }
 
     /**
+     * Set Connection Timeout.
+     *
      * @param int $connectTimeOut
      *
-     * @return $this
+     * @return TelegramRequest
      */
-    public function setConnectTimeOut($connectTimeOut)
+    public function setConnectTimeOut(int $connectTimeOut): self
     {
         $this->connectTimeOut = $connectTimeOut;
 

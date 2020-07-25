@@ -9,14 +9,10 @@ use Telegram\Bot\TelegramResponse;
  */
 class TelegramResponseException extends TelegramSDKException
 {
-    /**
-     * @var TelegramResponse The response that threw the exception.
-     */
+    /** @var TelegramResponse The response that threw the exception. */
     protected $response;
 
-    /**
-     * @var array Decoded response.
-     */
+    /** @var array Decoded response. */
     protected $responseData;
 
     /**
@@ -37,28 +33,6 @@ class TelegramResponseException extends TelegramSDKException
     }
 
     /**
-     * A factory for creating the appropriate exception based on the response from Telegram.
-     *
-     * @param TelegramResponse $response The response that threw the exception.
-     *
-     * @return TelegramResponseException
-     */
-    public static function create(TelegramResponse $response)
-    {
-        $data = $response->getDecodedBody();
-
-        $code = null;
-        $message = null;
-        if (isset($data['ok'], $data['error_code']) && $data['ok'] === false) {
-            $code = $data['error_code'];
-            $message = isset($data['description']) ? $data['description'] : 'Unknown error from API.';
-        }
-
-        // Others
-        throw new static($response, new TelegramOtherException($message, $code));
-    }
-
-    /**
      * Checks isset and returns that or a default value.
      *
      * @param string $key
@@ -66,13 +40,31 @@ class TelegramResponseException extends TelegramSDKException
      *
      * @return mixed
      */
-    private function get($key, $default = null)
+    protected function get($key, $default = null)
     {
-        if (isset($this->responseData[$key])) {
-            return $this->responseData[$key];
+        return $this->responseData[$key] ?? $default;
+    }
+
+    /**
+     * A factory for creating the appropriate exception based on the response from Telegram.
+     *
+     * @param TelegramResponse $response The response that threw the exception.
+     *
+     * @return TelegramResponseException
+     */
+    public static function create(TelegramResponse $response): self
+    {
+        $data = $response->getDecodedBody();
+
+        $code = null;
+        $message = null;
+        if (isset($data['ok'], $data['error_code']) && $data['ok'] === false) {
+            $code = $data['error_code'];
+            $message = $data['description'] ?? 'Unknown error from API.';
         }
 
-        return $default;
+        // Others
+        throw new static($response, new TelegramOtherException($message, $code));
     }
 
     /**
@@ -90,7 +82,7 @@ class TelegramResponseException extends TelegramSDKException
      *
      * @return string
      */
-    public function getErrorType()
+    public function getErrorType(): string
     {
         return $this->get('type', '');
     }
@@ -100,7 +92,7 @@ class TelegramResponseException extends TelegramSDKException
      *
      * @return string
      */
-    public function getRawResponse()
+    public function getRawResponse(): string
     {
         return $this->response->getBody();
     }
@@ -110,7 +102,7 @@ class TelegramResponseException extends TelegramSDKException
      *
      * @return array
      */
-    public function getResponseData()
+    public function getResponseData(): array
     {
         return $this->responseData;
     }
@@ -120,7 +112,7 @@ class TelegramResponseException extends TelegramSDKException
      *
      * @return TelegramResponse
      */
-    public function getResponse()
+    public function getResponse(): TelegramResponse
     {
         return $this->response;
     }

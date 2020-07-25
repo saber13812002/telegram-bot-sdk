@@ -6,11 +6,12 @@ namespace Telegram\Bot\Objects;
  * Class Document.
  *
  *
- * @method string       getFileId()     Unique file identifier.
- * @method PhotoSize    getThumb()      (Optional). Document thumbnail as defined by sender.
- * @method string       getFileName()   (Optional). Original filename as defined by sender.
- * @method string       getMimeType()   (Optional). MIME type of the file as defined by sender.
- * @method int          getFileSize()   (Optional). File size.
+ * @property string    $fileId           Unique file identifier.
+ * @property string    $fileUniqueId     Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
+ * @property PhotoSize $thumb            (Optional). Document thumbnail as defined by sender.
+ * @property string    $fileName         (Optional). Original filename as defined by sender.
+ * @property string    $mimeType         (Optional). MIME type of the file as defined by sender.
+ * @property int       $fileSize         (Optional). File size.
  */
 class Document extends BaseObject
 {

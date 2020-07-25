@@ -2,30 +2,23 @@
 
 namespace Telegram\Bot\Laravel;
 
+use Illuminate\Contracts\Container\Container as Application;
+use Illuminate\Foundation\Application as LaravelApplication;
+use Illuminate\Support\ServiceProvider;
+use Laravel\Lumen\Application as LumenApplication;
 use Telegram\Bot\Api;
 use Telegram\Bot\BotsManager;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Contracts\Container\Container as Application;
-use Laravel\Lumen\Application as LumenApplication;
-use Illuminate\Foundation\Application as LaravelApplication;
+use Telegram\Bot\Laravel\Artisan\WebhookCommand;
 
 /**
  * Class TelegramServiceProvider.
  */
 class TelegramServiceProvider extends ServiceProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
+    /** @var bool Indicates if loading of the provider is deferred. */
     protected $defer = true;
 
-    /**
-     * Boot the service provider.
-     *
-     * @return void
-     */
+    /** Boot the service provider. */
     public function boot()
     {
         $this->setupConfig($this->app);
@@ -35,8 +28,6 @@ class TelegramServiceProvider extends ServiceProvider
      * Setup the config.
      *
      * @param \Illuminate\Contracts\Container\Container $app
-     *
-     * @return void
      */
     protected function setupConfig(Application $app)
     {
@@ -53,26 +44,23 @@ class TelegramServiceProvider extends ServiceProvider
 
     /**
      * Register the service provider.
-     *
-     * @return void
      */
     public function register()
     {
         $this->registerManager($this->app);
         $this->registerBindings($this->app);
+        $this->commands('telegram.bot.commands.webhook');
     }
 
     /**
      * Register the manager class.
      *
      * @param \Illuminate\Contracts\Container\Container $app
-     *
-     * @return void
      */
     protected function registerManager(Application $app)
     {
         $app->singleton('telegram', function ($app) {
-            $config = (array)$app['config']['telegram'];
+            $config = app('config')->get('telegram');
 
             return (new BotsManager($config))->setContainer($app);
         });
@@ -84,8 +72,6 @@ class TelegramServiceProvider extends ServiceProvider
      * Register the bindings.
      *
      * @param \Illuminate\Contracts\Container\Container $app
-     *
-     * @return void
      */
     protected function registerBindings(Application $app)
     {
@@ -95,6 +81,8 @@ class TelegramServiceProvider extends ServiceProvider
             return $manager->bot();
         });
 
+        $app->bind('telegram.bot.commands.webhook', WebhookCommand::class);
+
         $app->alias('telegram.bot', Api::class);
     }
 
@@ -103,7 +91,7 @@ class TelegramServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return ['telegram', 'telegram.bot', BotsManager::class, Api::class];
     }

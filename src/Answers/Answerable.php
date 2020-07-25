@@ -2,12 +2,12 @@
 
 namespace Telegram\Bot\Answers;
 
-use Telegram\Bot\Api;
-use Telegram\Bot\Objects\Update;
 use Illuminate\Support\Str;
+use Telegram\Bot\Objects\Update;
+use Telegram\Bot\Traits\Telegram;
 
 /**
- * Class Answer
+ * Class Answerable.
  *
  * @method mixed replyWithMessage($use_sendMessage_parameters)       Reply Chat with a message. You can use all the sendMessage() parameters except chat_id.
  * @method mixed replyWithPhoto($use_sendPhoto_parameters)           Reply Chat with a Photo. You can use all the sendPhoto() parameters except chat_id.
@@ -21,10 +21,7 @@ use Illuminate\Support\Str;
  */
 trait Answerable
 {
-    /**
-     * @var Api Holds the Super Class Instance.
-     */
-    protected $telegram;
+    use Telegram;
 
     /**
      * @var Update Holds an Update object.
@@ -41,42 +38,31 @@ trait Answerable
      */
     public function __call($method, $arguments)
     {
-        $action = substr($method, 0, 9);
-        if ($action !== 'replyWith') {
+        if (! Str::startsWith($method, 'replyWith')) {
             throw new \BadMethodCallException("Method [$method] does not exist.");
         }
-        
         $reply_name = Str::studly(substr($method, 9));
-        $methodName = 'send' . $reply_name;
+        $methodName = 'send'.$reply_name;
 
-        if (!method_exists($this->telegram, $methodName)) {
+        if (! method_exists($this->telegram, $methodName)) {
             throw new \BadMethodCallException("Method [$method] does not exist.");
         }
 
-        if (null === $chat = $this->update->getChat())
-        {
+        if (! $this->update->getChat()->has('id')) {
             throw new \BadMethodCallException("No chat available for reply with [$method].");
         }
 
-        $chat_id = $chat->getId();
+        $params = array_merge(['chat_id' => $this->update->getChat()->id], $arguments[0]);
 
-        $params = array_merge(compact('chat_id'), $arguments[0]);
-
-        return call_user_func_array([$this->telegram, $methodName], [$params]);
+        return call_user_func([$this->telegram, $methodName], $params);
     }
 
     /**
-     * @return Api
-     */
-    public function getTelegram()
-    {
-        return $this->telegram;
-    }
-
-    /**
+     * Returns Update object.
+     *
      * @return Update
      */
-    public function getUpdate()
+    public function getUpdate(): Update
     {
         return $this->update;
     }

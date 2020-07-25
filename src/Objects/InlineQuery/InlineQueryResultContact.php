@@ -3,7 +3,7 @@
 namespace Telegram\Bot\Objects\InlineQuery;
 
 /**
- * Class InlineQueryResultContact
+ * Class InlineQueryResultContact.
  *
  * <code>
  * $params = [
@@ -11,6 +11,7 @@ namespace Telegram\Bot\Objects\InlineQuery;
  *   'phone_number'             => '',
  *   'first_name'               => '',
  *   'last_name'                => '',
+ *   'vcard'                    => '',
  *   'reply_markup'             => '',
  *   'input_message_content'    => '',
  *   'thumb_url'                => '',
@@ -25,6 +26,7 @@ namespace Telegram\Bot\Objects\InlineQuery;
  * @method $this setPhoneNumber($string)            Contact's phone number
  * @method $this setFirstName($string)              Contact's first name
  * @method $this setLastName($string)               Optional. Contact's last name
+ * @method $this setVcard($string)                  Optional. Additional data about the contact in the form of a vCard, 0-2048 bytes
  * @method $this setReplyMarkup($object)            Optional. Inline keyboard attached to the message
  * @method $this setInputMessageContent($object)    Optional. Content of the message to be sent instead of the contact
  * @method $this setThumbUrl($string)               Optional. Url of the thumbnail for the result
@@ -33,9 +35,5 @@ namespace Telegram\Bot\Objects\InlineQuery;
  */
 class InlineQueryResultContact extends InlineBaseObject
 {
-    public function __construct($params = [])
-    {
-        parent::__construct($params);
-        $this->put('type', 'contact');
-    }
+    protected $type = 'contact';
 }

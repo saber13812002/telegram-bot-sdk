@@ -1,8 +1,11 @@
 <?php
+
 namespace Telegram\Bot\Keyboard;
 
+use Telegram\Bot\Objects\LoginUrl;
+
 /**
- * Class Keyboard
+ * Class Keyboard.
  *
  * <code>
  * // For Standard Keyboard
@@ -29,11 +32,7 @@ namespace Telegram\Bot\Keyboard;
  */
 class Keyboard extends Base
 {
-    /**
-     * Make an Inline Keyboard
-     *
-     * @var bool
-     */
+    /** @var bool Make an Inline Keyboard */
     protected $inline = false;
 
     /**
@@ -41,9 +40,9 @@ class Keyboard extends Base
      *
      * @link https://core.telegram.org/bots/api#inlinekeyboardmarkup
      *
-     * @return $this
+     * @return Keyboard
      */
-    public function inline()
+    public function inline(): self
     {
         $this->inline = true;
 
@@ -55,7 +54,7 @@ class Keyboard extends Base
      *
      * @return bool
      */
-    public function isInlineKeyboard()
+    public function isInlineKeyboard(): bool
     {
         return $this->inline;
     }
@@ -63,16 +62,14 @@ class Keyboard extends Base
     /**
      * Create a new row in keyboard to add buttons.
      *
-     * @return $this
+     * @param array $buttons
+     *
+     * @return Keyboard
      */
-    public function row()
+    public function row(...$buttons): self
     {
-        $property = 'keyboard';
-        if ($this->isInlineKeyboard()) {
-            $property = 'inline_keyboard';
-        }
-
-        $this->items[$property][] = func_get_args();
+        $property = $this->isInlineKeyboard() ? 'inline_keyboard' : 'keyboard';
+        $this->items[$property][] = $buttons;
 
         return $this;
     }
@@ -97,11 +94,13 @@ class Keyboard extends Base
      *
      * @link https://core.telegram.org/bots/api#keyboardbutton
      *
-     * @param string|array $params
+     * @param string|array $params           [
      *
-     * @var string         $params ['text']
-     * @var bool           $params ['request_contact']
-     * @var bool           $params ['request_location']
+     * @var string         $text             Required. Text of the button. If none of the optional fields are used, it will be sent to the bot as a message when the button is pressed
+     * @var bool           $request_contact  Optional. If True, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only
+     * @var bool           $request_location Optional. If True, the user's current location will be sent when the button is pressed. Available in private chats only
+     *
+     * ]
      *
      * @return mixed
      */
@@ -122,23 +121,34 @@ class Keyboard extends Base
      *
      * <code>
      * $params = [
-     *   'text'                 => '',
-     *   'url'                  => '',
-     *   'callback_data'        => '',
-     *   'switch_inline_query'  => '',
+     *   'text'                                 => '',
+     *   'url'                                  => '',
+     *   'login_url'                            => '',
+     *   'callback_data'                        => '',
+     *   'switch_inline_query'                  => '',
+     *   'switch_inline_query_current_chat'     => '',
+     *   'callback_game'                        => '',
+     *   'pay'                                  => '',
+     *
      * ];
      * </code>
      *
      * @link https://core.telegram.org/bots/api#inlinekeyboardbutton
      *
-     * @param string|array $params
+     * @param array  $params                           [
      *
-     * @var string         $params ['text']
-     * @var string         $params ['url']
-     * @var string         $params ['callback_data']
-     * @var string         $params ['switch_inline_query']
+     * @var string   $text                             Required. Label text on the button
+     * @var string   $url                              Optional. HTTP url to be opened when button is pressed
+     * @var LoginUrl $url                              Optional. An HTTP URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget.
+     * @var string   $callback_data                    Optional. Data to be sent in a callback query to the bot when button is pressed, 1-64 bytes
+     * @var string   $switch_inline_query              Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot‘s username and the specified inline query in the input field. Can be empty, in which case just the bot’s username will be inserted.
+     * @var string   $switch_inline_query_current_chat Optional. If set, pressing the button will insert the bot‘s username and the specified inline query in the current chat's input field. Can be empty, in which case only the bot’s username will be inserted.
+     * @var string   $callback_game                    Optional. Description of the game that will be launched when the user presses the button. NOTE: This type of button must always be the first button in the first row.
+     * @var string   $pay                              Optional. Specify True, to send a Pay button. NOTE: This type of button must always be the first button in the first row.
      *
-     * @return string
+     * ]
+     *
+     * @return mixed
      */
     public static function inlineButton($params = [])
     {
@@ -150,23 +160,25 @@ class Keyboard extends Base
      *
      * <code>
      * $params = [
-     *   'hide_keyboard' => true,
+     *   'remove_keyboard' => true,
      *   'selective'     => false,
      * ];
      * </code>
      *
-     * @link https://core.telegram.org/bots/api#replykeyboardhide
+     * @link https://core.telegram.org/bots/api#replykeyboardremove
      *
-     * @param array $params
+     * @param array $params          [
      *
-     * @var bool    $params ['hide_keyboard']
-     * @var bool    $params ['selective']
+     * @var bool    $remove_keyboard Required. Requests clients to remove the custom keyboard (user will not be able to summon this keyboard; if you want to hide the keyboard from sight but keep it accessible, use one_time_keyboard in ReplyKeyboardMarkup)
+     * @var bool    $selective       Optional. Use this parameter if you want to remove the keyboard for specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
      *
-     * @return string
+     * ]
+     *
+     * @return Keyboard
      */
-    public static function hide(array $params = [])
+    public static function remove(array $params = []): self
     {
-        return new static(array_merge(['hide_keyboard' => true, 'selective' => false], $params));
+        return new static(array_merge(['remove_keyboard' => true, 'selective' => false], $params));
     }
 
     /**
@@ -181,14 +193,16 @@ class Keyboard extends Base
      *
      * @link https://core.telegram.org/bots/api#forcereply
      *
-     * @param array $params
+     * @param array $params      [
      *
-     * @var bool    $params ['force_reply']
-     * @var bool    $params ['selective']
+     * @var bool    $force_reply Required. Shows reply interface to the user, as if they manually selected the bot‘s message and tapped ’Reply'
+     * @var bool    $selective   Optional. Use this parameter if you want to force reply from specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
      *
-     * @return string
+     * ]
+     *
+     * @return Keyboard
      */
-    public static function forceReply(array $params = [])
+    public static function forceReply(array $params = []): self
     {
         return new static(array_merge(['force_reply' => true, 'selective' => false], $params));
     }

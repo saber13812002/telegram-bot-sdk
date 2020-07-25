@@ -3,7 +3,7 @@
 namespace Telegram\Bot\Objects\InlineQuery;
 
 /**
- * Class InlineQueryResultVenue
+ * Class InlineQueryResultVenue.
  *
  * <code>
  * $params = [
@@ -13,6 +13,7 @@ namespace Telegram\Bot\Objects\InlineQuery;
  *   'title'                    => '',
  *   'address'                  => '',
  *   'foursquare_id'            => '',
+ *   'foursquare_type'          => '',
  *   'reply_markup'             => '',
  *   'input_message_content'    => '',
  *   'thumb_url'                => '',
@@ -29,6 +30,7 @@ namespace Telegram\Bot\Objects\InlineQuery;
  * @method $this setTitle($string)                  Title of the venue
  * @method $this setAddress($string)                Address of the venue
  * @method $this setFoursquareId($string)           Optional. Foursquare identifier of the venue if known
+ * @method $this setFoursquareType($string)         Optional. Foursquare type of the venue, if known. (For example, “arts_entertainment/default”, “arts_entertainment/aquarium” or “food/icecream”.)
  * @method $this setReplyMarkup($object)            Optional. Inline keyboard attached to the message
  * @method $this setInputMessageContent($object)    Optional. Content of the message to be sent instead of the venue
  * @method $this setThumbUrl($string)               Optional. Url of the thumbnail for the result
@@ -37,9 +39,5 @@ namespace Telegram\Bot\Objects\InlineQuery;
  */
 class InlineQueryResultVenue extends InlineBaseObject
 {
-    public function __construct($params = [])
-    {
-        parent::__construct($params);
-        $this->put('type', 'venue');
-    }
+    protected $type = 'venue';
 }
